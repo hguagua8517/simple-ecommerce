@@ -1,7 +1,10 @@
-import { Box, Container, Heading, Input, useColorModeValue, VStack, Button } from '@chakra-ui/react'
+import { Box, Container, Heading, Input, useColorModeValue, VStack, Button, useToast } from '@chakra-ui/react'
 import React from 'react'
 import { useState } from 'react'
 import { useProductStore } from '../store/product'
+import { set } from 'mongoose'
+import ProductAccordion from '../components/ProductAccordion'
+
 
 const CreatePage = () => {
   const [ newProduct, setNewProduct ] = useState({
@@ -10,6 +13,8 @@ const CreatePage = () => {
     image: ''
   })
 
+  const toast = useToast();
+
   const { createProduct } = useProductStore();
 
   const handleAddProduct = async () => {
@@ -17,6 +22,24 @@ const CreatePage = () => {
     const { success, message } = await createProduct(newProduct);
     console.log("Success:", success);
     console.log("Message:", message);
+    if(!success){
+      toast({
+        title: "Error",
+        description: message,
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+    }else{
+      toast({
+        title: "Success",
+        description: message,
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+      });
+    }
+    setNewProduct({ name: '', price: '', image: '' });
   };
 
   return <Container maxW={"container.sm"} >
@@ -31,6 +54,12 @@ const CreatePage = () => {
                 <Button colorScheme={"blue"} onClick={handleAddProduct} w={"full"} >Add Product</Button>
 
               </VStack>
+            </Box>
+            
+            <Box w={"full"} bg={useColorModeValue("white", "gray.800")} p={6} rounded={"lg"} shadow={"md"}>
+            <VStack spacing={8}>
+              <ProductAccordion products={useProductStore(state => state.products)} />
+            </VStack>
             </Box>
          </Container>
 }
